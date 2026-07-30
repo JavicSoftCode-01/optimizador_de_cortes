@@ -1,4 +1,5 @@
 import {CutPiece} from '../models/CutPiece.js';
+import { ToastService } from '../services/ToastService.js';
 
 export class UIManager {
   constructor() {
@@ -7,7 +8,8 @@ export class UIManager {
     this.onOptimizeCallback = null;
     this.onExportPDFCallback = null;
     this.onSheetChangeCallback = null;
-    this.onApplySheetCallback = null; // Callback para el botón Aplicar
+    this.onApplySheetCallback = null;
+    this.onCutAddedCallback = null; // Callback para notificar toast cuando se agrega un corte
 
     this.initDOMReferences();
     this.bindEvents();
@@ -175,7 +177,7 @@ export class UIManager {
     const fitsRotated = width <= sheetH && height <= sheetW;
 
     if (!fitsNormal && !fitsRotated) {
-      alert(`⚠️ PROTECCIÓN DE DIMENSIONES EXCEDENTES:\n\nLa pieza "${name || 'Sin nombre'}" (${width} x ${height} mm) excede las dimensiones de la plancha base (${sheetW} x ${sheetH} mm).\n\nNo se puede agregar un corte que sobrepasa la dimensión de la plancha.`);
+      ToastService.show('error', 'Cortes excedentes', `La pieza "${name || 'Sin nombre'}" (${width} x ${height} mm) excede las dimensiones de la plancha base (${sheetW} x ${sheetH} mm).\n\nNo se puede agregar un corte que sobrepasa la dimensión de la plancha.`, 10000);
       return;
     }
 
@@ -342,6 +344,8 @@ export class UIManager {
     const newCut = new CutPiece(newId, finalName, width, height, qty);
     this.cutsList.push(newCut);
     this.renderCutsTable();
+    // Notificar al exterior para mostrar el toast de éxito
+    if (this.onCutAddedCallback) this.onCutAddedCallback(newCut);
   }
 
   clearCutForm() {

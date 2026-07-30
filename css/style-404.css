@@ -1,0 +1,286 @@
+/* ==========================================================================
+   OPTICUT 3D — PÁGINA 404 | Estilos dedicados
+   ========================================================================== */
+
+:root {
+  --bg-main:       #0f172a;
+  --bg-card:       #1e293b;
+  --bg-card-hover: #334155;
+  --border-color:  #334155;
+  --text-main:     #f8fafc;
+  --text-muted:    #94a3b8;
+  --primary:       #3b82f6;
+  --primary-hover: #2563eb;
+  --accent:        #10b981;
+  --accent-hover:  #059669;
+  --radius-md:     12px;
+  --radius-lg:     20px;
+  --font-family:   'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Fondo con partículas animadas de cuadrícula ────────────────── */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Orbs decorativos */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-orb-blue {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+  top: -100px;
+  right: -100px;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+
+.bg-orb-green {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+  bottom: -80px;
+  left: -80px;
+  animation: orbFloat 10s ease-in-out infinite reverse;
+}
+
+@keyframes orbFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-30px) scale(1.05); }
+}
+
+/* ── Contenedor central ─────────────────────────────────────────── */
+.page-404 {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+  padding: 40px 24px;
+  max-width: 560px;
+  width: 100%;
+}
+
+/* ── Logo / Marca ───────────────────────────────────────────────── */
+.brand-404 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.brand-404 .brand-icon {
+  color: var(--primary);
+  width: 36px;
+  height: 36px;
+}
+
+.brand-404 .brand-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.brand-404 .brand-name span {
+  color: var(--primary);
+}
+
+/* ── Tarjeta principal ──────────────────────────────────────────── */
+.card-404 {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ── Número 404 ─────────────────────────────────────────────────── */
+.error-code {
+  font-size: clamp(5rem, 18vw, 9rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -4px;
+  animation: codePulse 3s ease-in-out infinite;
+}
+
+@keyframes codePulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.8; }
+}
+
+/* ── Ícono de pieza cortada ─────────────────────────────────────── */
+.cut-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(59,130,246,0.1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.cut-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* ── Textos ─────────────────────────────────────────────────────── */
+.error-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.error-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 380px;
+}
+
+/* ── Datos técnicos de "corte fallido" ──────────────────────────── */
+.error-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.spec-item {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spec-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.spec-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.spec-value.red   { color: #f43f5e; }
+.spec-value.green { color: var(--accent); }
+
+/* ── Botón principal ────────────────────────────────────────────── */
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: #fff;
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+  width: 100%;
+}
+
+.btn-home:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(59,130,246,0.5);
+}
+
+.btn-home svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.footer-404 {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Contador regresivo ─────────────────────────────────────────── */
+.redirect-msg {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.redirect-countdown {
+  font-weight: 700;
+  color: var(--primary);
+  min-width: 20px;
+  display: inline-block;
+  text-align: center;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .card-404 {
+    padding: 28px 20px;
+  }
+
+  .error-specs {
+    grid-template-columns: 1fr;
+  }
+}

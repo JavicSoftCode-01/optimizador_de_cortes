@@ -3,6 +3,7 @@ import {NestingEngine} from './services/NestingEngine.js';
 import {PDFService} from './services/PDFService.js';
 import {Scene3D} from './view/Scene3D.js';
 import {UIManager} from './view/UIManager.js';
+import {ToastService} from './services/ToastService.js';
 
 /**
  * Clase principal de la Aplicación.
@@ -28,12 +29,7 @@ class App {
 
   renderInitialEmptySheet() {
     const sheetConfig = this.uiManager.getSheetConfig();
-    const emptySheet = new Sheet(
-      1,
-      sheetConfig.width,
-      sheetConfig.height,
-      sheetConfig.thickness
-    );
+    const emptySheet = new Sheet(1, sheetConfig.width, sheetConfig.height, sheetConfig.thickness);
     this.scene3D.renderSheet(emptySheet);
   }
 
@@ -54,19 +50,27 @@ class App {
     this.uiManager.onExportPDFCallback = () => {
       this.handleExportPDF();
     };
+
+    // Callback de toast desde UIManager (agregar corte exitoso)
+    this.uiManager.onCutAddedCallback = (cut) => {
+      ToastService.show('success', 'Corte agregado', `"${cut.name}" — ${cut.width} × ${cut.height} mm · Cant: ${cut.quantity}`);
+    };
   }
 
   /**
-   * Actualiza inmediatamente las dimensiones de la plancha en 3D
+   * Actualiza las dimensiones de la plancha en 3D y muestra toast de confirmación
    */
   handleApplySheetConfig() {
+    const cfg = this.uiManager.getSheetConfig();
+
     if (this.uiManager.cutsList.length > 0 && this.calculatedSheets.length > 0) {
-      // Si ya existían cortes optimizados, recalcular con las nuevas medidas
       this.runOptimization();
     } else {
-      // Si la lista está vacía, ajustar únicamente la plancha tridimensional limpia
       this.renderInitialEmptySheet();
     }
+
+    ToastService.show('info', 'Dimensiones aplicadas', //  `Plancha: ${cfg.width} × ${cfg.height} mm · Espesor: ${cfg.thickness} mm · Kerf: ${cfg.kerf} mm`
+    );
   }
 
   /**
@@ -76,7 +80,12 @@ class App {
     const cutsList = this.uiManager.cutsList;
 
     if (cutsList.length === 0) {
-      alert('Por favor, agrega al menos un corte a la lista antes de optimizar.');
+      ToastService.show(
+        'info',
+        'No tienes Cortes',
+        'Agrega al menos un corte a la lista antes de optimizar.'
+        );
+      //alert('Por favor, agrega al menos un corte a la lista antes de optimizar.');
       return;
     }
 
@@ -95,13 +104,8 @@ class App {
       const details = exceedingCuts
         .map((c) => `• Pieza "${c.name}": ${c.width} x ${c.height} mm (Cant: ${c.quantity})`)
         .join('\n');
-
-      alert(
-        `⚠️ DIMENSIONES EXCEDENTES A CORTAR:\n\n` +
-        `Los siguientes cortes sobrepasan las dimensiones de la plancha base (${sheetW} x ${sheetH} mm):\n\n` +
-        `${details}\n\n` +
-        `Por favor, ajusta las medidas de los cortes o las dimensiones de la plancha base.`
-      );
+      ToastService.show('error', 'Cortes excedentes', `Los siguientes cortes sobrepasan las dimensiones de la plancha base.`);
+      //alert(`⚠️ DIMENSIONES EXCEDENTES A CORTAR:\n\n` + `Los siguientes cortes sobrepasan las dimensiones de la plancha base (${sheetW} x ${sheetH} mm):\n\n` + `${details}\n\n` + `Por favor, ajusta las medidas de los cortes o las dimensiones de la plancha base.`);
       return;
     }
 
@@ -109,26 +113,25 @@ class App {
     this.uiManager.setOptimizeButtonLoading(true);
     this.uiManager.showLoading(true);
 
-
     // Pequeña pausa asíncrona para forzar al navegador a pintar el botón bloqueado
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     try {
-      const sheetConfig = this.uiManager.getSheetConfig();
-
       // 2. Ejecutar el cálculo de optimización (MaxRects 2D)
-      this.calculatedSheets = NestingEngine.optimize(
-        sheetConfig,
-        cutsList,
-        sheetConfig.kerf
-      );
+      this.calculatedSheets = NestingEngine.optimize(sheetConfig, cutsList, sheetConfig.kerf);
 
       this.currentSheetIndex = 0;
       this.renderCurrentState();
 
+      // Toast de éxito al finalizar la optimización
+      const totalPieces = this.calculatedSheets.reduce((t, s) => t + s.placedCuts.length, 0);
+      const avgEff = (this.calculatedSheets.reduce((s, sh) => s + sh.efficiency, 0) / this.calculatedSheets.length).toFixed(1);
+      ToastService.show('success', 'Optimización completada', //  `${this.calculatedSheets.length} planchas · ${totalPieces} piezas · Eficiencia promedio: ${avgEff}%`,
+      );
+
     } catch (error) {
       console.error('Error durante el cálculo de optimización:', error);
-      alert('Ocurrió un error al procesar los cortes. Revisa la consola.');
+      ToastService.show('error', 'Error en optimización', 'Ocurrió un problema al procesar los cortes. Revisa la consola.');
     } finally {
       // 3. Desbloquear el botón una vez terminado el procesamiento (éxito o error)
       this.uiManager.setOptimizeButtonLoading(false);
@@ -143,16 +146,10 @@ class App {
 
     this.scene3D.renderSheet(currentSheet);
 
-    const totalPiecesPlaced = this.calculatedSheets.reduce(
-      (total, sheet) => total + sheet.placedCuts.length,
-      0
-    );
+    const totalPiecesPlaced = this.calculatedSheets.reduce((total, sheet) => total + sheet.placedCuts.length, 0);
 
     this.uiManager.updateDashboard(this.calculatedSheets, totalPiecesPlaced);
-    this.uiManager.updateNavigation(
-      this.currentSheetIndex,
-      this.calculatedSheets.length
-    );
+    this.uiManager.updateNavigation(this.currentSheetIndex, this.calculatedSheets.length);
     this.uiManager.renderLegend(currentSheet.placedCuts);
   }
 
@@ -167,7 +164,8 @@ class App {
 
   async handleExportPDF() {
     if (!this.calculatedSheets || this.calculatedSheets.length === 0) {
-      alert('Primero debes agregar cortes y presionar "Calcular Optimización".');
+      ToastService.show('info', 'No tienes Cortes', 'Primero debes agregar cortes y presionar "Calcular Optimización".');
+      //alert('Primero debes agregar cortes y presionar "Calcular Optimización".');
       return;
     }
 
@@ -176,13 +174,10 @@ class App {
 
     this.uiManager.showLoading(true);
 
-    await PDFService.generateReport(
-      this.calculatedSheets,
-      cutsList,
-      canvasContainer
-    );
+    await PDFService.generateReport(this.calculatedSheets, cutsList, canvasContainer);
 
     this.uiManager.showLoading(false);
+    ToastService.show('success', '📄 Reporte descargado', 'El PDF de optimización se ha generado correctamente.');
   }
 }
 
