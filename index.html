@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Optimizador Inteligente de Corte 3D</title>
+
+  <!-- Tipografía Google Font (Plus Jakarta Sans para estética Apple / Material UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+  <!-- Iconos Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Estilos CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <meta name="theme-color" content="#0f172a">
+</head>
+
+<body>
+
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="app-layout">
+
+  <!-- ENCABEZADO / NAVBAR -->
+  <header class="app-header">
+    <div class="brand">
+      <i data-lucide="layers"></i>
+      <h1>OptiCut <span>3D</span></h1>
+    </div>
+
+    <div class="header-actions">
+      <!-- Toggle Modo Oscuro/Claro
+      <button id="btn-theme-toggle" class="btn-icon" title="Cambiar tema">
+        <i data-lucide="sun" id="theme-icon"></i>
+      </button> -->
+
+      <!-- Botón Exportar PDF -->
+      <button id="btn-export-pdf" class="btn btn-secondary">
+        <i data-lucide="file-down"></i>
+        <span>Descargar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PANEL CONTENEDOR DE CONTENIDOS -->
+  <main class="app-main">
+
+    <!-- COLUMNA IZQUIERDA: CONTROLES Y FORMULARIOS -->
+    <aside class="sidebar">
+
+      <!-- 1. Configuración de Plancha & Kerf -->
+      <section class="card">
+        <!-- 1. Dimensiones de la Plancha -->
+        <div class="card-header">
+          <i data-lucide="box"></i>
+          <h3>1. Dimensiones de la Plancha</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <!-- Ancho  -->
+            <div class="form-group">
+              <label for="sheet-width">ANCHO (MM)</label>
+              <input type="number" id="sheet-width" value="1220" min="1" placeholder="Ej: 1220"/>
+            </div>
+
+            <!-- Alto / Largo -->
+            <div class="form-group">
+              <label for="sheet-height">ALTO / LARGO (MM)</label>
+              <input type="number" id="sheet-height" value="2440" min="1" placeholder="Ej: 2440"/>
+            </div>
+
+            <!-- Espesor de la Plancha -->
+            <div class="form-group">
+              <label for="sheet-thickness">ESPESOR (MM)</label>
+              <input type="number" id="sheet-thickness" value="3" min="0.1" max="100" step="0.5"
+                     placeholder="Ej: 3, 15, 18"/>
+            </div>
+
+            <!-- Desperdicio / Kerf del disco de corte -->
+            <div class="form-group">
+              <label for="sheet-kerf">KERF / CORTE (MM)</label>
+              <input type="number" id="sheet-kerf" value="2" min="0" max="20" step="0.1" placeholder="Ej: 2, 3.2"/>
+            </div>
+          </div>
+
+          <!-- Botón para aplicar dimensiones inmediatamente -->
+          <button id="btn-apply-sheet" class="btn btn-secondary btn-full"
+                  style="margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i data-lucide="refresh-cw" style="width: 20px; height: 20px;"></i>
+            <span>Aplicar Dimensiones</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. Gestión de Cortes -->
+      <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="scissors" style="width: 20px; height: 20px;"></i>
+            <h3>2. Lista de Cortes</h3>
+          </div>
+
+          <button type="submit" form="form-cut" class="btn btn-primary" style="padding: 7px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+
+        <div class="card-body">
+          <form id="form-cut">
+            <div class="form-grid-cuts">
+              <div class="form-group">
+                <label for="cut-name">NOMBRE / ID</label>
+                <input type="text" id="cut-name" placeholder="Ej: Pieza A" required />
+              </div>
+              <div class="form-group">
+                <label for="cut-height">ALTO (MM)</label>
+                <input type="number" id="cut-height" placeholder="300" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="cut-width">ANCHO (MM)</label>
+                <input type="number" id="cut-width" placeholder="400" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="cut-qty">CANT.</label>
+                <input type="number" id="cut-qty" value="1" min="1" required />
+              </div>
+            </div>
+          </form>
+
+          <div class="table-container" style="margin-top: 12px;">
+            <table class="cut-table">
+              <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Meds. (mm)</th>
+                <th>Cant.</th>
+                <th>Acción</th>
+              </tr>
+              </thead>
+              <tbody id="cuts-table-body">
+              <!-- Se llena dinámicamente con JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón Ejecutar Optimización -->
+      <button id="btn-optimize" class="btn btn-accent btn-block">
+        <i data-lucide="cpu"></i>
+        <span>Calcular Optimización</span>
+      </button>
+
+    </aside>
+
+    <!-- COLUMNA DERECHA: RENDER 3D Y ESTADÍSTICAS -->
+    <section class="viewport-section">
+
+      <!-- Barra Superior de Navegación entre Planchas -->
+      <div class="sheet-navigation-bar card">
+        <button id="btn-prev-sheet" class="btn-icon" disabled>
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <span id="sheet-nav-info">Plancha 1 de 1</span>
+        <button id="btn-next-sheet" class="btn-icon" disabled>
+          <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Canvas Renderizador 3D -->
+      <div id="canvas-container" class="canvas-wrapper card">
+        <!-- Three.js renderizará la escena aquí -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+          <div class="spinner"></div>
+          <p>Calculando optimización de cortes...</p>
+        </div>
+      </div>
+
+      <!-- Dashboard de Estadísticas -->
+      <div class="stats-grid">
+        <div class="stat-card card">
+          <i data-lucide="percent" class="stat-icon icon-green"></i>
+          <div class="stat-data">
+            <span class="stat-title">Aprovechamiento</span>
+            <span id="stat-efficiency" class="stat-value">0.00%</span>
+          </div>
+        </div>
+
+        <div class="stat-card card">
+          <i data-lucide="trash-2" class="stat-icon icon-red"></i>
+          <div class="stat-data">
+            <span class="stat-title">Desperdicio</span>
+            <span id="stat-waste" class="stat-value">0.00%</span>
+          </div>
+        </div>
+
+        <div class="stat-card card">
+          <i data-lucide="copy" class="stat-icon icon-blue"></i>
+          <div class="stat-data">
+            <span class="stat-title">Planchas Usadas</span>
+            <span id="stat-total-sheets" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card card">
+          <i data-lucide="box" class="stat-icon icon-purple"></i>
+          <div class="stat-data">
+            <span class="stat-title">Total Piezas</span>
+            <span id="stat-total-pieces" class="stat-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guía / Leyenda de Cortes Colocados -->
+      <div class="card cuts-legend-card">
+        <div class="card-header">
+          <i data-lucide="palette"></i>
+          <h2>Identificador de Cortes en Plancha Actual</h2>
+        </div>
+        <div id="cuts-legend-container" class="legend-tags-wrapper">
+          <!-- Etiquetas dinámicas con color ID, nombre y medidas -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- LIBRERÍAS EXTERNAS (CDN) -->
+<!-- 1. Three.js & OrbitControls (Para la vista 3D) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<!-- 2. html2canvas & jsPDF (Para exportar el reporte a PDF) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Inicializar Iconos Lucide -->
+<script>
+  lucide.createIcons();
+</script>
+
+<!-- SCRIPT PRINCIPAL DE LA APLICACIÓN (Módulo ES6) -->
+<script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>
