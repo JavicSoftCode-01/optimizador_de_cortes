@@ -260,6 +260,33 @@
   </div>
 </div>
 
+<button id="btn-clear-storage" class="floating-trash-btn" type="button" aria-label="Vaciar datos locales">
+  <i data-lucide="trash-2"></i>
+</button>
+
+<div id="clear-data-modal" class="modal-overlay hidden">
+  <div class="modal-card danger-modal">
+    <div class="modal-header">
+      <div class="modal-icon-wrapper danger-icon">
+        <i data-lucide="trash-2"></i>
+      </div>
+      <h3>Eliminar bitácora local</h3>
+    </div>
+    <div class="modal-body">
+      <p>Esta acción borrará todos los cortes, planchas y datos de la sesión almacenados en el navegador. ¿Desea continuar?</p>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-cancel-clear-data" class="btn btn-cancel">
+        <span>Cancelar</span>
+      </button>
+      <button id="btn-confirm-clear-data" class="btn btn-danger">
+        <i data-lucide="trash-2"></i>
+        <span>Eliminar todo</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- CONTENEDOR DE TOAST NOTIFICATIONS -->
 <div id="toast-container" class="toast-container"></div>
 
@@ -269,7 +296,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <!-- 2. html2canvas & jsPDF (Para exportar el reporte a PDF) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <!-- Inicializar Iconos Lucide -->

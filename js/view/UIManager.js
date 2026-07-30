@@ -9,7 +9,9 @@ export class UIManager {
     this.onExportPDFCallback = null;
     this.onSheetChangeCallback = null;
     this.onApplySheetCallback = null;
-    this.onCutAddedCallback = null; // Callback para notificar toast cuando se agrega un corte
+    this.onCutAddedCallback = null;
+    this.onCutsListChangedCallback = null;
+    this.onClearAllDataCallback = null;
 
     this.initDOMReferences();
     this.bindEvents();
@@ -36,6 +38,10 @@ export class UIManager {
     this.btnOptimize = document.getElementById('btn-optimize');
     this.btnExportPDF = document.getElementById('btn-export-pdf');
     this.btnThemeToggle = document.getElementById('btn-theme-toggle');
+    this.btnClearStorage = document.getElementById('btn-clear-storage');
+    this.clearDataModal = document.getElementById('clear-data-modal');
+    this.btnConfirmClearData = document.getElementById('btn-confirm-clear-data');
+    this.btnCancelClearData = document.getElementById('btn-cancel-clear-data');
 
     // Navegación
     this.btnPrevSheet = document.getElementById('btn-prev-sheet');
@@ -93,6 +99,25 @@ export class UIManager {
     if (this.btnThemeToggle) {
       this.btnThemeToggle.addEventListener('click', () => {
         document.body.classList.toggle('light-theme');
+      });
+    }
+
+    if (this.btnClearStorage) {
+      this.btnClearStorage.addEventListener('click', () => {
+        if (this.clearDataModal) this.clearDataModal.classList.remove('hidden');
+      });
+    }
+
+    if (this.btnConfirmClearData) {
+      this.btnConfirmClearData.addEventListener('click', () => {
+        this.closeClearDataModal();
+        if (this.onClearAllDataCallback) this.onClearAllDataCallback();
+      });
+    }
+
+    if (this.btnCancelClearData) {
+      this.btnCancelClearData.addEventListener('click', () => {
+        this.closeClearDataModal();
       });
     }
 
@@ -291,6 +316,7 @@ export class UIManager {
 
     this.pendingDuplicateTarget.quantity += this.pendingCut.qty;
     this.renderCutsTable();
+    if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
     this.clearCutForm();
     this.closeDuplicateModal();
   }
@@ -344,7 +370,7 @@ export class UIManager {
     const newCut = new CutPiece(newId, finalName, width, height, qty);
     this.cutsList.push(newCut);
     this.renderCutsTable();
-    // Notificar al exterior para mostrar el toast de éxito
+    if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
     if (this.onCutAddedCallback) this.onCutAddedCallback(newCut);
   }
 
@@ -393,10 +419,15 @@ export class UIManager {
         const idx = Number(e.currentTarget.getAttribute('data-index'));
         this.cutsList.splice(idx, 1);
         this.renderCutsTable();
+        if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
       });
     });
 
     if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeClearDataModal() {
+    if (this.clearDataModal) this.clearDataModal.classList.add('hidden');
   }
 
   getSheetConfig() {
@@ -418,7 +449,11 @@ export class UIManager {
     }
 
     const totalSheets = sheets.length;
-    const avgEfficiency = (sheets.reduce((sum, s) => sum + s.efficiency, 0) / totalSheets).toFixed(2);
+    const safeValues = sheets.map((sheet) => {
+      const value = Number(sheet?.efficiency);
+      return Number.isFinite(value) ? value : 0;
+    });
+    const avgEfficiency = (safeValues.reduce((sum, value) => sum + value, 0) / totalSheets).toFixed(2);
     const avgWaste = (100 - parseFloat(avgEfficiency)).toFixed(2);
 
     if (this.statEfficiency) this.statEfficiency.textContent = `${avgEfficiency}%`;
