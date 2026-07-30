@@ -80,9 +80,35 @@ class App {
       return;
     }
 
+    const sheetConfig = this.uiManager.getSheetConfig();
+    const sheetW = sheetConfig.width;
+    const sheetH = sheetConfig.height;
+
+    // Validar si existen cortes que sobrepasan la plancha base
+    const exceedingCuts = cutsList.filter((cut) => {
+      const fitsNormal = cut.width <= sheetW && cut.height <= sheetH;
+      const fitsRotated = cut.width <= sheetH && cut.height <= sheetW;
+      return !fitsNormal && !fitsRotated;
+    });
+
+    if (exceedingCuts.length > 0) {
+      const details = exceedingCuts
+        .map((c) => `• Pieza "${c.name}": ${c.width} x ${c.height} mm (Cant: ${c.quantity})`)
+        .join('\n');
+
+      alert(
+        `⚠️ DIMENSIONES EXCEDENTES A CORTAR:\n\n` +
+        `Los siguientes cortes sobrepasan las dimensiones de la plancha base (${sheetW} x ${sheetH} mm):\n\n` +
+        `${details}\n\n` +
+        `Por favor, ajusta las medidas de los cortes o las dimensiones de la plancha base.`
+      );
+      return;
+    }
+
     // 1. Bloquear botón inmediatamente y mostrar el Spinner
     this.uiManager.setOptimizeButtonLoading(true);
     this.uiManager.showLoading(true);
+
 
     // Pequeña pausa asíncrona para forzar al navegador a pintar el botón bloqueado
     await new Promise((resolve) => setTimeout(resolve, 100));

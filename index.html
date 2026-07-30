@@ -118,12 +118,12 @@
                 <input type="text" id="cut-name" placeholder="Ej: Pieza A" required />
               </div>
               <div class="form-group">
-                <label for="cut-height">ALTO (MM)</label>
-                <input type="number" id="cut-height" placeholder="300" min="1" required />
-              </div>
-              <div class="form-group">
                 <label for="cut-width">ANCHO (MM)</label>
                 <input type="number" id="cut-width" placeholder="400" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="cut-height">ALTO (MM)</label>
+                <input type="number" id="cut-height" placeholder="300" min="1" required />
               </div>
               <div class="form-group">
                 <label for="cut-qty">CANT.</label>
@@ -231,6 +231,44 @@
 
   </main>
 </div>
+
+<!-- MODAL DE CORTE DUPLICADO -->
+<div id="duplicate-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-icon-wrapper">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <h3 id="duplicate-modal-title">¡Registro Existente!</h3>
+    </div>
+    <div class="modal-body">
+      <p id="duplicate-modal-msg">Ya existe un corte registrado con datos similares.</p>
+      <div id="duplicate-existing-info" class="duplicate-info-box">
+        <!-- Detalle dinámico del corte existente -->
+      </div>
+
+      <div id="duplicate-name-group" class="form-group" style="margin-top: 14px; display: none;">
+        <label for="duplicate-new-name" id="duplicate-name-label">Nombre para el nuevo registro:</label>
+        <input type="text" id="duplicate-new-name" placeholder="Ej: Pieza B" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-modal-sum" class="btn btn-primary">
+        <i data-lucide="plus-circle"></i>
+        <span id="btn-modal-sum-text">Sumar Cantidad</span>
+      </button>
+      <button id="btn-modal-new" class="btn btn-secondary">
+        <i data-lucide="file-plus"></i>
+        <span id="btn-modal-new-text">Nuevo Registro</span>
+      </button>
+      <button id="btn-modal-cancel" class="btn btn-cancel">
+        <span>Cancelar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
 
 <!-- LIBRERÍAS EXTERNAS (CDN) -->
 <!-- 1. Three.js & OrbitControls (Para la vista 3D) -->

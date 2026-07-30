@@ -48,6 +48,23 @@ export class UIManager {
 
     this.legendContainer = document.getElementById('cuts-legend-container');
     this.loadingOverlay = document.getElementById('loading-overlay');
+
+    // Modal de Duplicados
+    this.duplicateModal = document.getElementById('duplicate-modal');
+    this.duplicateModalTitle = document.getElementById('duplicate-modal-title');
+    this.duplicateModalMsg = document.getElementById('duplicate-modal-msg');
+    this.duplicateExistingInfo = document.getElementById('duplicate-existing-info');
+    this.duplicateNameGroup = document.getElementById('duplicate-name-group');
+    this.duplicateNameLabel = document.getElementById('duplicate-name-label');
+    this.duplicateNewNameInput = document.getElementById('duplicate-new-name');
+    this.btnModalSum = document.getElementById('btn-modal-sum');
+    this.btnModalSumText = document.getElementById('btn-modal-sum-text');
+    this.btnModalNew = document.getElementById('btn-modal-new');
+    this.btnModalNewText = document.getElementById('btn-modal-new-text');
+    this.btnModalCancel = document.getElementById('btn-modal-cancel');
+    this.pendingCut = null;
+    this.pendingDuplicateTarget = null;
+    this.modalMode = null;
   }
 
   bindEvents() {
@@ -86,6 +103,25 @@ export class UIManager {
     if (this.btnNextSheet) {
       this.btnNextSheet.addEventListener('click', () => {
         if (this.onSheetChangeCallback) this.onSheetChangeCallback(1);
+      });
+    }
+
+    // Eventos del Modal de Duplicados
+    if (this.btnModalSum) {
+      this.btnModalSum.addEventListener('click', () => {
+        this.handleModalSum();
+      });
+    }
+
+    if (this.btnModalNew) {
+      this.btnModalNew.addEventListener('click', () => {
+        this.handleModalNew();
+      });
+    }
+
+    if (this.btnModalCancel) {
+      this.btnModalCancel.addEventListener('click', () => {
+        this.closeDuplicateModal();
       });
     }
   }
@@ -130,18 +166,192 @@ export class UIManager {
       return;
     }
 
-    const newId = this.cutsList.length + 1;
-    const newCut = new CutPiece(newId, name, width, height, qty);
+    const sheetConfig = this.getSheetConfig();
+    const sheetW = sheetConfig.width;
+    const sheetH = sheetConfig.height;
 
+    // Validación 1: Protección contra dimensiones que sobrepasan la plancha base
+    const fitsNormal = width <= sheetW && height <= sheetH;
+    const fitsRotated = width <= sheetH && height <= sheetW;
+
+    if (!fitsNormal && !fitsRotated) {
+      alert(`⚠️ PROTECCIÓN DE DIMENSIONES EXCEDENTES:\n\nLa pieza "${name || 'Sin nombre'}" (${width} x ${height} mm) excede las dimensiones de la plancha base (${sheetW} x ${sheetH} mm).\n\nNo se puede agregar un corte que sobrepasa la dimensión de la plancha.`);
+      return;
+    }
+
+    const finalName = name || `Pieza ${String.fromCharCode(65 + (this.cutsList.length % 26))}`;
+    const normalizedName = finalName.toLowerCase();
+
+    // Buscar si existe un corte con el MISMO NOMBRE
+    const existingByName = this.cutsList.find((c) => c.name.toLowerCase() === normalizedName);
+
+    if (existingByName) {
+      const dimsMatch = (existingByName.width === width && existingByName.height === height) ||
+                        (existingByName.width === height && existingByName.height === width);
+
+      this.pendingCut = { name: finalName, width, height, qty };
+      this.pendingDuplicateTarget = existingByName;
+
+      if (dimsMatch) {
+        // CONDICIONAL 1: Mismo nombre Y mismas dimensiones (Ancho y Alto)
+        this.openExactDuplicateModal(existingByName, this.pendingCut);
+      } else {
+        // CONDICIONAL 2: Mismo nombre PERO dimensiones diferentes
+        this.openNameConflictModal(existingByName, this.pendingCut);
+      }
+      return;
+    }
+
+    this.createAndAddCut(finalName, width, height, qty);
+    this.clearCutForm();
+  }
+
+  openExactDuplicateModal(existing, incoming) {
+    if (!this.duplicateModal) return;
+
+    this.modalMode = 'EXACT';
+
+    if (this.duplicateModalTitle) {
+      this.duplicateModalTitle.textContent = '¡Registro Idéntico Detectado!';
+    }
+
+    this.duplicateModalMsg.innerHTML = `Ya existe un registro con el mismo nombre (<strong>${existing.name}</strong>) y las mismas medidas (<strong>${incoming.width} x ${incoming.height} mm</strong>). ¿Desea sumar la cantidad al registro existente o crear un nuevo registro?`;
+
+    this.duplicateExistingInfo.innerHTML = `
+      <strong>Registro existente:</strong> ${existing.name}<br>
+      • Medidas: ${existing.width} x ${existing.height} mm<br>
+      • Cantidad actual: <strong>${existing.quantity}</strong> piezas
+    `;
+
+    if (this.btnModalSum) this.btnModalSum.style.display = 'inline-flex';
+    if (this.btnModalSumText) this.btnModalSumText.textContent = `Sumar (+${incoming.qty}) a ${existing.name}`;
+
+    if (this.btnModalNew) this.btnModalNew.style.display = 'inline-flex';
+    if (this.btnModalNewText) this.btnModalNewText.textContent = 'Crear nuevo registro';
+
+    // Mostrar campo para especificar el nuevo nombre diferenciado
+    if (this.duplicateNameGroup) this.duplicateNameGroup.style.display = 'block';
+    if (this.duplicateNameLabel) this.duplicateNameLabel.textContent = 'Nombre para el nuevo registro (opcional):';
+    if (this.duplicateNewNameInput) {
+      this.duplicateNewNameInput.value = `${incoming.name} 2`;
+    }
+
+    this.duplicateModal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  openNameConflictModal(existing, incoming) {
+    if (!this.duplicateModal) return;
+
+    this.modalMode = 'NAME_CONFLICT';
+
+    if (this.duplicateModalTitle) {
+      this.duplicateModalTitle.textContent = '¡Nombre Ya Registrado!';
+    }
+
+    this.duplicateModalMsg.innerHTML = `Este nombre (<strong>${existing.name}</strong>) ya está registrado con medidas diferentes (<strong>${existing.width} x ${existing.height} mm</strong>). Cambie el nombre para que no haya confusión.`;
+
+    this.duplicateExistingInfo.innerHTML = `
+      <strong>Medidas del registro existente (${existing.name}):</strong> ${existing.width} x ${existing.height} mm<br>
+      <strong>Nuevas medidas ingresadas:</strong> ${incoming.width} x ${incoming.height} mm
+    `;
+
+    if (this.btnModalSum) this.btnModalSum.style.display = 'none';
+
+    if (this.btnModalNew) this.btnModalNew.style.display = 'inline-flex';
+    if (this.btnModalNewText) this.btnModalNewText.textContent = 'Guardar con nuevo nombre';
+
+    if (this.duplicateNameGroup) this.duplicateNameGroup.style.display = 'block';
+    if (this.duplicateNameLabel) this.duplicateNameLabel.textContent = 'Ingrese un nuevo nombre diferente:';
+    if (this.duplicateNewNameInput) {
+      this.duplicateNewNameInput.value = '';
+      setTimeout(() => this.duplicateNewNameInput.focus(), 100);
+    }
+
+    this.duplicateModal.classList.remove('hidden');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeDuplicateModal() {
+    if (this.duplicateModal) {
+      this.duplicateModal.classList.add('hidden');
+    }
+    if (this.duplicateNewNameInput) {
+      this.duplicateNewNameInput.value = '';
+    }
+    this.pendingCut = null;
+    this.pendingDuplicateTarget = null;
+    this.modalMode = null;
+  }
+
+  handleModalSum() {
+    if (!this.pendingCut || !this.pendingDuplicateTarget) return;
+
+    this.pendingDuplicateTarget.quantity += this.pendingCut.qty;
+    this.renderCutsTable();
+    this.clearCutForm();
+    this.closeDuplicateModal();
+  }
+
+  handleModalNew() {
+    if (!this.pendingCut) return;
+
+    let requestedName = this.duplicateNewNameInput ? this.duplicateNewNameInput.value.trim() : '';
+
+    if (this.modalMode === 'NAME_CONFLICT') {
+      if (!requestedName) {
+        alert('Por favor, ingrese un nombre diferente para registrar esta pieza.');
+        if (this.duplicateNewNameInput) this.duplicateNewNameInput.focus();
+        return;
+      }
+
+      const lower = requestedName.toLowerCase();
+      if (this.cutsList.some((c) => c.name.toLowerCase() === lower)) {
+        alert(`El nombre "${requestedName}" ya está registrado en la lista. Elija un nombre diferente.`);
+        if (this.duplicateNewNameInput) this.duplicateNewNameInput.focus();
+        return;
+      }
+
+      this.createAndAddCut(requestedName, this.pendingCut.width, this.pendingCut.height, this.pendingCut.qty);
+    } else {
+      // CONDICIONAL 1: Mismo nombre y mismas medidas
+      let newName = requestedName;
+      if (!newName) {
+        newName = `${this.pendingCut.name} 2`;
+      }
+
+      // Validar que el nuevo nombre no colisione con ningún registro existente
+      const lower = newName.toLowerCase();
+      if (this.cutsList.some((c) => c.name.toLowerCase() === lower)) {
+        alert(`El nombre "${newName}" ya existe en la lista. Por favor, especifique un nombre diferente para la nueva pieza.`);
+        if (this.duplicateNewNameInput) this.duplicateNewNameInput.focus();
+        return;
+      }
+
+      this.createAndAddCut(newName, this.pendingCut.width, this.pendingCut.height, this.pendingCut.qty);
+    }
+
+    this.clearCutForm();
+    this.closeDuplicateModal();
+  }
+
+
+  createAndAddCut(name, width, height, qty) {
+    const finalName = name || `Pieza ${String.fromCharCode(65 + (this.cutsList.length % 26))}`;
+    const newId = this.cutsList.length + 1;
+    const newCut = new CutPiece(newId, finalName, width, height, qty);
     this.cutsList.push(newCut);
     this.renderCutsTable();
+  }
 
+  clearCutForm() {
     this.cutNameInput.value = '';
     this.cutWidthInput.value = '';
     this.cutHeightInput.value = '';
     this.cutQtyInput.value = '1';
     this.cutNameInput.focus();
   }
+
 
   renderCutsTable() {
     this.cutsTableBody.innerHTML = '';

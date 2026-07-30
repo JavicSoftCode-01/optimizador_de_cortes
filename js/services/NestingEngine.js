@@ -110,23 +110,33 @@ export class NestingEngine {
   }
 
   /**
-   * Encuentra la mejor posición buscando minimizar el espacio desperdiciado en el lado corto (BSSF)
+   * Encuentra la mejor posición priorizando empaquetado continuo (Bottom-Left: Y menor, X menor)
+   * para garantizar filas y columnas uniformes y sin fragmentaciones erráticas.
    */
   static findBestFit(freeRects, pieceW, pieceH) {
     let bestFit = null;
+    let bestY = Infinity;
+    let bestX = Infinity;
     let bestShortSideFit = Infinity;
     let bestLongSideFit = Infinity;
 
     for (const rect of freeRects) {
       // 1. Probar Orientación Normal (sin rotar)
       if (pieceW <= rect.width && pieceH <= rect.height) {
-        const leftoverX = Math.abs(rect.width - pieceW);
-        const leftoverY = Math.abs(rect.height - pieceH);
+        const leftoverX = rect.width - pieceW;
+        const leftoverY = rect.height - pieceH;
         const shortSideFit = Math.min(leftoverX, leftoverY);
         const longSideFit = Math.max(leftoverX, leftoverY);
 
-        if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+        if (
+          rect.y < bestY ||
+          (rect.y === bestY && rect.x < bestX) ||
+          (rect.y === bestY && rect.x === bestX && shortSideFit < bestShortSideFit) ||
+          (rect.y === bestY && rect.x === bestX && shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)
+        ) {
           bestFit = { x: rect.x, y: rect.y, rotated: false };
+          bestY = rect.y;
+          bestX = rect.x;
           bestShortSideFit = shortSideFit;
           bestLongSideFit = longSideFit;
         }
@@ -134,13 +144,20 @@ export class NestingEngine {
 
       // 2. Probar Orientación Rotada 90°
       if (pieceH <= rect.width && pieceW <= rect.height) {
-        const leftoverX = Math.abs(rect.width - pieceH);
-        const leftoverY = Math.abs(rect.height - pieceW);
+        const leftoverX = rect.width - pieceH;
+        const leftoverY = rect.height - pieceW;
         const shortSideFit = Math.min(leftoverX, leftoverY);
         const longSideFit = Math.max(leftoverX, leftoverY);
 
-        if (shortSideFit < bestShortSideFit || (shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)) {
+        if (
+          rect.y < bestY ||
+          (rect.y === bestY && rect.x < bestX) ||
+          (rect.y === bestY && rect.x === bestX && shortSideFit < bestShortSideFit) ||
+          (rect.y === bestY && rect.x === bestX && shortSideFit === bestShortSideFit && longSideFit < bestLongSideFit)
+        ) {
           bestFit = { x: rect.x, y: rect.y, rotated: true };
+          bestY = rect.y;
+          bestX = rect.x;
           bestShortSideFit = shortSideFit;
           bestLongSideFit = longSideFit;
         }
@@ -149,6 +166,7 @@ export class NestingEngine {
 
     return bestFit;
   }
+
 
   /**
    * Recorta los rectángulos libres que hayan sido traslapados por la pieza colocada

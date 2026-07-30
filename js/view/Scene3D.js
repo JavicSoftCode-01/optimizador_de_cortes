@@ -187,13 +187,19 @@ export class Scene3D {
    */
   centerCameraOnSheet(width, height) {
     const maxDim = Math.max(width, height);
-    const distance = maxDim * 1.8;
+    const aspect = (this.container.clientWidth || 800) / (this.container.clientHeight || 500);
 
-    // FIX CRÍTICO: Ajustar dinámicamente el 'far' para evitar que objetos gigantes desaparezcan por Clipping
+    const fovInRad = (this.camera.fov * Math.PI) / 180;
+    const distanceH = (height / 2) / Math.tan(fovInRad / 2);
+    const distanceW = (width / 2) / (Math.tan(fovInRad / 2) * aspect);
+    const distance = Math.max(distanceH, distanceW) * 1.25;
+
+    // Ajustar dinámicamente el far clipping plane
     this.camera.far = Math.max(500000, distance * 10);
     this.camera.updateProjectionMatrix();
 
-    this.camera.position.set(0, -distance * 0.8, distance);
+    // Vista con perspectiva 3D elegante e inclinación suavizada (0.3 Y, 1.2 Z)
+    this.camera.position.set(0, -distance * 0.35, distance * 1.15);
     this.camera.lookAt(0, 0, 0);
 
     if (this.controls) {
@@ -201,6 +207,7 @@ export class Scene3D {
       this.controls.update();
     }
   }
+
 
   /**
    * Reajusta la proporción del render cuando cambia el tamaño de la pantalla
