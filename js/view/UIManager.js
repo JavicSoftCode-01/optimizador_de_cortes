@@ -315,6 +315,7 @@ export class UIManager {
     if (!this.pendingCut || !this.pendingDuplicateTarget) return;
 
     this.pendingDuplicateTarget.quantity += this.pendingCut.qty;
+    this.pendingDuplicateTarget.isCalculated = false;
     this.renderCutsTable();
     if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
     this.clearCutForm();
@@ -367,7 +368,7 @@ export class UIManager {
   createAndAddCut(name, width, height, qty) {
     const finalName = name || `Pieza ${String.fromCharCode(65 + (this.cutsList.length % 26))}`;
     const newId = this.cutsList.length + 1;
-    const newCut = new CutPiece(newId, finalName, width, height, qty);
+    const newCut = new CutPiece(newId, finalName, width, height, qty, null, false);
     this.cutsList.push(newCut);
     this.renderCutsTable();
     if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
@@ -398,6 +399,15 @@ export class UIManager {
 
     this.cutsList.forEach((cut, index) => {
       const tr = document.createElement('tr');
+      const isCalculated = Boolean(cut.isCalculated);
+      const statusBadge = isCalculated
+        ? `<span class="status-badge status-calculated" title="Calculado e incluido en la optimización 3D">
+             <i data-lucide="check"></i>
+           </span>`
+        : `<span class="status-badge status-pending" title="Pendiente por calcular optimización">
+             P
+           </span>`;
+
       tr.innerHTML = `
         <td>
           <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:${cut.color}; margin-right:6px;"></span>
@@ -406,9 +416,12 @@ export class UIManager {
         <td>${cut.width} x ${cut.height}</td>
         <td>${cut.quantity}</td>
         <td>
-          <button class="btn-icon btn-delete" data-index="${index}" title="Eliminar pieza" style="width:28px; height:28px; padding:0;">
-            <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
-          </button>
+          <div style="display:inline-flex; align-items:center; gap:6px;">
+            ${statusBadge}
+            <button class="btn-icon btn-delete" data-index="${index}" title="Eliminar pieza" style="width:28px; height:28px; padding:0;">
+              <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+            </button>
+          </div>
         </td>
       `;
       this.cutsTableBody.appendChild(tr);
@@ -417,9 +430,12 @@ export class UIManager {
     this.cutsTableBody.querySelectorAll('.btn-delete').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const idx = Number(e.currentTarget.getAttribute('data-index'));
+        const removedCut = this.cutsList[idx];
+        const removedName = removedCut ? removedCut.name : '';
+        const wasCalculated = removedCut ? Boolean(removedCut.isCalculated) : false;
         this.cutsList.splice(idx, 1);
         this.renderCutsTable();
-        if (this.onCutsListChangedCallback) this.onCutsListChangedCallback();
+        if (this.onCutsListChangedCallback) this.onCutsListChangedCallback(removedName, wasCalculated);
       });
     });
 

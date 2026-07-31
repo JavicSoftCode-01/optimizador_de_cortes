@@ -11,13 +11,14 @@ export class CutPiece {
    * @param {number} quantity - Cantidad requerida de este tipo de pieza.
    * @param {string} [color] - Color asignado (Hex o HSL). Si se omite, genera uno dinámico.
    */
-  constructor(id, name, width, height, quantity = 1, color = null) {
+  constructor(id, name, width, height, quantity = 1, color = null, isCalculated = false) {
     this.id = id;
     this.name = name || `Corte #${id}`;
     this.width = Number(width);
     this.height = Number(height);
     this.quantity = Number(quantity);
     this.color = color || CutPiece.generateDistinctColor(id);
+    this.isCalculated = Boolean(isCalculated);
   }
 
   /**

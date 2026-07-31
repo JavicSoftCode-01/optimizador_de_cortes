@@ -62,12 +62,27 @@ class App {
     };
 
     this.uiManager.onCutAddedCallback = (cut) => {
-      ToastService.show('success', 'Corte agregado', `"${cut.name}" — ${cut.width} × ${cut.height} mm · Cant: ${cut.quantity}`);
+      ToastService.show('success', 'Corte agregado', `"${cut.name}" — ${cut.width} × ${cut.height} mm · Cant: ${cut.quantity} (Pendiente)`);
       this.saveState();
     };
 
-    this.uiManager.onCutsListChangedCallback = () => {
-      this.saveState();
+    this.uiManager.onCutsListChangedCallback = (removedName, wasCalculated) => {
+      if (this.uiManager.cutsList.length === 0) {
+        this.calculatedSheets = [];
+        this.currentSheetIndex = 0;
+        this.renderInitialEmptySheet();
+        this.saveState();
+        ToastService.show('warning', 'Lista de cortes vacía', 'Se limpió la escena 3D y el tablero de estadísticas.');
+      } else if (wasCalculated && this.calculatedSheets.length > 0) {
+        // Sólo recalcula si el corte eliminado ya estaba incluido en la optimización
+        this.runOptimization(true).then(() => {
+          if (removedName) {
+            ToastService.show('info', 'Corte eliminado', `Se eliminó "${removedName}" y se recalculó la optimización.`);
+          }
+        });
+      } else {
+        this.saveState();
+      }
     };
 
     this.uiManager.onClearAllDataCallback = () => {
@@ -98,11 +113,12 @@ class App {
           cut.width ?? 0,
           cut.height ?? 0,
           cut.quantity ?? 1,
-          cut.color ?? null
+          cut.color ?? null,
+          Boolean(cut.isCalculated)
         ));
       }
 
-      if (Array.isArray(data.calculatedSheets) && data.calculatedSheets.length > 0) {
+      if (Array.isArray(data.calculatedSheets) && data.calculatedSheets.length > 0 && this.uiManager.cutsList.length > 0) {
         this.calculatedSheets = data.calculatedSheets.map((sheet) => {
           const restoredSheet = new Sheet(
             sheet.id ?? 1,
@@ -122,7 +138,8 @@ class App {
                   placement.cutPiece.width ?? 0,
                   placement.cutPiece.height ?? 0,
                   placement.cutPiece.quantity ?? 1,
-                  placement.cutPiece.color ?? null
+                  placement.cutPiece.color ?? null,
+                  Boolean(placement.cutPiece.isCalculated)
                 ) : null
               }))
             : [];
@@ -158,7 +175,8 @@ class App {
         width: cut.width,
         height: cut.height,
         quantity: cut.quantity,
-        color: cut.color
+        color: cut.color,
+        isCalculated: Boolean(cut.isCalculated)
       })),
       calculatedSheets: this.calculatedSheets.map((sheet) => ({
         id: sheet.id,
@@ -175,7 +193,8 @@ class App {
             width: placement.cutPiece.width,
             height: placement.cutPiece.height,
             quantity: placement.cutPiece.quantity,
-            color: placement.cutPiece.color
+            color: placement.cutPiece.color,
+            isCalculated: Boolean(placement.cutPiece.isCalculated)
           }
         }))
       })),
@@ -206,10 +225,19 @@ class App {
   handleApplySheetConfig() {
     const cfg = this.uiManager.getSheetConfig();
 
-    if (this.uiManager.cutsList.length > 0 && this.calculatedSheets.length > 0) {
-      this.runOptimization();
+    if (this.calculatedSheets && this.calculatedSheets.length > 0) {
+      this.calculatedSheets.forEach((sheet) => {
+        sheet.width = cfg.width;
+        sheet.height = cfg.height;
+        sheet.thickness = cfg.thickness;
+      });
+      const currentSheet = this.calculatedSheets[this.currentSheetIndex];
+      if (currentSheet) {
+        this.scene3D.renderSheet(currentSheet);
+      }
     } else {
-      this.renderInitialEmptySheet();
+      const emptySheet = new Sheet(1, cfg.width, cfg.height, cfg.thickness);
+      this.scene3D.renderSheet(emptySheet);
     }
 
     this.saveState();
@@ -219,15 +247,21 @@ class App {
   /**
    * Flujo principal con bloqueo seguro de botón durante la optimización
    */
-  async runOptimization() {
+  async runOptimization(isAuto = false) {
     const cutsList = this.uiManager.cutsList;
 
     if (cutsList.length === 0) {
-      ToastService.show(
-        'info',
-        'No tienes Cortes',
-        'Agrega al menos un corte a la lista antes de optimizar.'
+      this.calculatedSheets = [];
+      this.currentSheetIndex = 0;
+      this.renderInitialEmptySheet();
+      this.saveState();
+      if (!isAuto) {
+        ToastService.show(
+          'info',
+          'No tienes Cortes',
+          'La lista de cortes está vacía. Se restableció la vista 3D y las estadísticas.'
         );
+      }
       return;
     }
 
@@ -254,9 +288,18 @@ class App {
     try {
       this.calculatedSheets = NestingEngine.optimize(sheetConfig, cutsList, sheetConfig.kerf);
       this.currentSheetIndex = 0;
+
+      // Marcar todas las piezas como calculadas
+      this.uiManager.cutsList.forEach((cut) => {
+        cut.isCalculated = true;
+      });
+      this.uiManager.renderCutsTable();
+
       this.renderCurrentState();
       this.saveState();
-      ToastService.show('success', 'Optimización completada', 'La distribución y la bitácora local se han actualizado.');
+      if (!isAuto) {
+        ToastService.show('success', 'Optimización completada', 'La distribución y la bitácora local se han actualizado.');
+      }
     } catch (error) {
       console.error('Error durante el cálculo de optimización:', error);
       ToastService.show('error', 'Error en optimización', 'Ocurrió un problema al procesar los cortes. Revisa la consola.');

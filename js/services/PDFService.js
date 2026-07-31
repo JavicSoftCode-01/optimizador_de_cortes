@@ -161,12 +161,12 @@ export class PDFService {
 
     currentY = 26;
 
-    // ── Resumen General ─────────────────────────────────────────────────────
+    // ── Información General ─────────────────────────────────────────────────
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('1. Resumen General', margin, currentY);
-    currentY += 8;
+    doc.text('INFORMACIÓN GENERAL', margin, currentY);
+    currentY += 7;
 
     const totalSheets     = sheets.length;
     const totalPlacedCuts = sheets.reduce((s, sh) => s + sh.placedCuts.length, 0);
@@ -194,7 +194,7 @@ export class PDFService {
       currentY += 6.5;
     });
 
-    currentY += 6;
+    currentY += 2;
 
     // ── Una sección por plancha ─────────────────────────────────────────────
     sheets.forEach((sheet, index) => {
