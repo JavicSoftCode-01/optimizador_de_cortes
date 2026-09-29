@@ -1,0 +1,229 @@
+{
+  "communities": {
+    "0": [
+      "package",
+      "package_author",
+      "package_description",
+      "package_keywords",
+      "package_license",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_start",
+      "package_scripts_test",
+      "package_version",
+      "ref_copy_webpack_plugin",
+      "ref_html_webpack_plugin",
+      "ref_webpack",
+      "ref_webpack_cli",
+      "ref_webpack_dev_server",
+      "ref_webpack_merge",
+      "webpack_common",
+      "webpack_common_path",
+      "webpack_config_dev",
+      "webpack_config_dev_common",
+      "webpack_config_dev_merge",
+      "webpack_config_prod",
+      "webpack_config_prod_common",
+      "webpack_config_prod_copyplugin",
+      "webpack_config_prod_htmlwebpackplugin",
+      "webpack_config_prod_merge"
+    ],
+    "1": [
+      "js_view_uimanager_uimanager",
+      "js_view_uimanager_uimanager_bindevents",
+      "js_view_uimanager_uimanager_clearcutform",
+      "js_view_uimanager_uimanager_closecleardatamodal",
+      "js_view_uimanager_uimanager_closeduplicatemodal",
+      "js_view_uimanager_uimanager_constructor",
+      "js_view_uimanager_uimanager_createandaddcut",
+      "js_view_uimanager_uimanager_getsheetconfig",
+      "js_view_uimanager_uimanager_handleaddcut",
+      "js_view_uimanager_uimanager_handlemodalnew",
+      "js_view_uimanager_uimanager_handlemodalsum",
+      "js_view_uimanager_uimanager_initdomreferences",
+      "js_view_uimanager_uimanager_openexactduplicatemodal",
+      "js_view_uimanager_uimanager_opennameconflictmodal",
+      "js_view_uimanager_uimanager_rendercutstable",
+      "js_view_uimanager_uimanager_renderlegend",
+      "js_view_uimanager_uimanager_setoptimizebuttonloading",
+      "js_view_uimanager_uimanager_showloading",
+      "js_view_uimanager_uimanager_updatedashboard",
+      "js_view_uimanager_uimanager_updatenavigation"
+    ],
+    "2": [
+      "js_app",
+      "js_models_cutpiece",
+      "js_models_cutpiece_cutpiece",
+      "js_models_cutpiece_cutpiece_area",
+      "js_models_cutpiece_cutpiece_cloneindividual",
+      "js_models_cutpiece_cutpiece_constructor",
+      "js_models_cutpiece_cutpiece_generatedistinctcolor",
+      "js_models_cutpiece_cutpiece_totalarea",
+      "js_models_sheet",
+      "js_services_nestingengine",
+      "js_services_pdfservice",
+      "js_services_toastservice",
+      "js_services_toastservice_toastservice",
+      "js_services_toastservice_toastservice_iconpath",
+      "js_view_scene3d",
+      "js_view_uimanager"
+    ],
+    "3": [
+      "js_models_sheet_sheet",
+      "js_models_sheet_sheet_addcut",
+      "js_models_sheet_sheet_clearcuts",
+      "js_models_sheet_sheet_constructor",
+      "js_models_sheet_sheet_efficiency",
+      "js_models_sheet_sheet_totalarea",
+      "js_models_sheet_sheet_usedarea",
+      "js_models_sheet_sheet_wastearea",
+      "js_models_sheet_sheet_wastepercentage",
+      "js_services_nestingengine_nestingengine",
+      "js_services_nestingengine_nestingengine_findbestfit",
+      "js_services_nestingengine_nestingengine_intersects",
+      "js_services_nestingengine_nestingengine_iscontainedin",
+      "js_services_nestingengine_nestingengine_optimize",
+      "js_services_nestingengine_nestingengine_prunefreerectangles",
+      "js_services_nestingengine_nestingengine_splitfreerectangles"
+    ],
+    "4": [
+      "js_app_app",
+      "js_app_app_bindcallbacks",
+      "js_app_app_clearalldata",
+      "js_app_app_constructor",
+      "js_app_app_handleapplysheetconfig",
+      "js_app_app_handleexportpdf",
+      "js_app_app_handlesheetchange",
+      "js_app_app_hydratefromstorage",
+      "js_app_app_init",
+      "js_app_app_rendercurrentstate",
+      "js_app_app_renderinitialemptysheet",
+      "js_app_app_runoptimization",
+      "js_app_app_savestate",
+      "js_services_toastservice_toastservice_show"
+    ],
+    "5": [
+      "js_view_scene3d_scene3d",
+      "js_view_scene3d_scene3d_animate",
+      "js_view_scene3d_scene3d_centercameraonsheet",
+      "js_view_scene3d_scene3d_constructor",
+      "js_view_scene3d_scene3d_init",
+      "js_view_scene3d_scene3d_onwindowresize",
+      "js_view_scene3d_scene3d_rendersheet",
+      "js_view_scene3d_scene3d_setuplights"
+    ],
+    "6": [
+      "package_devdependencies",
+      "package_devdependencies_copy_webpack_plugin",
+      "package_devdependencies_html_webpack_plugin",
+      "package_devdependencies_webpack",
+      "package_devdependencies_webpack_cli",
+      "package_devdependencies_webpack_dev_server",
+      "package_devdependencies_webpack_merge"
+    ],
+    "7": [
+      "js_services_pdfservice_pdfservice",
+      "js_services_pdfservice_pdfservice_drawsheetplan",
+      "js_services_pdfservice_pdfservice_formatcmdimensions",
+      "js_services_pdfservice_pdfservice_generatereport",
+      "js_services_pdfservice_pdfservice_getplacementdimensions",
+      "js_services_pdfservice_pdfservice_mmtocm"
+    ],
+    "8": [
+      "js_page_404"
+    ]
+  },
+  "cohesion": {
+    "0": 0.07936507936507936,
+    "1": 0.20526315789473684,
+    "2": 0.23333333333333334,
+    "3": 0.175,
+    "4": 0.3956043956043956,
+    "5": 0.42857142857142855,
+    "6": 0.2857142857142857,
+    "7": 0.7333333333333333,
+    "8": 1.0
+  },
+  "gods": [
+    {
+      "id": "js_view_uimanager_uimanager",
+      "label": "UIManager",
+      "degree": 22
+    },
+    {
+      "id": "js_models_sheet_sheet",
+      "label": "Sheet",
+      "degree": 15
+    },
+    {
+      "id": "js_app_app",
+      "label": "App",
+      "degree": 13
+    },
+    {
+      "id": "js_models_cutpiece_cutpiece",
+      "label": "CutPiece",
+      "degree": 10
+    },
+    {
+      "id": "js_view_scene3d_scene3d",
+      "label": "Scene3D",
+      "degree": 10
+    },
+    {
+      "id": "js_services_nestingengine_nestingengine",
+      "label": "NestingEngine",
+      "degree": 8
+    },
+    {
+      "id": "js_services_pdfservice_pdfservice",
+      "label": "PDFService",
+      "degree": 7
+    },
+    {
+      "id": "js_services_toastservice_toastservice",
+      "label": "ToastService",
+      "degree": 5
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 4
+    },
+    {
+      "id": "ref_webpack_merge",
+      "label": "webpack-merge",
+      "degree": 3
+    }
+  ],
+  "surprises": [],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `UIManager` connect `UIManager` to `app.js`, `App`?",
+      "why": "High betweenness centrality (0.172) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Sheet` connect `Sheet` to `app.js`, `App`?",
+      "why": "High betweenness centrality (0.102) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `Scene3D` connect `Scene3D` to `app.js`, `App`?",
+      "why": "High betweenness centrality (0.080) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `author`, `description`, `keywords` to the rest of the system?",
+      "why": "26 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `package.json` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.07936507936507936 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
