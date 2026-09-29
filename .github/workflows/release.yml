@@ -1,0 +1,42 @@
+name: Release Automation
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Package & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Package project archive
+        run: |
+          tar -czf opticut3d-${{ github.ref_name }}.tar.gz dist/ index.html 404.html css/ js/ img/ site.webmanifest favicon.ico icon.png icon.svg LICENSE.txt README.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: opticut3d-${{ github.ref_name }}.tar.gz
+          generate_release_notes: true
